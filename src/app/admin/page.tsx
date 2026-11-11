@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/server";
-import { slotLabel, todayInTZ } from "@/lib/slots";
+import { formatDate, slotLabel, todayInTZ } from "@/lib/slots";
 import { approveBooking, logout, rejectBooking } from "./actions";
 
 const ERRORS: Record<string, string> = {
@@ -8,47 +8,64 @@ const ERRORS: Record<string, string> = {
   failed: "Gagal memperbarui. Coba lagi.",
 };
 
+type Booking = { id: string; date: string; start_hour: number; name: string; phone: string };
+
+const when = (b: Booking) =>
+  `${formatDate(b.date, { weekday: "long", day: "numeric", month: "long" })} · ${slotLabel(b.start_hour)}`;
+
+const Phone = ({ phone }: { phone: string }) => (
+  <a href={`tel:${phone}`} className="text-green-800 underline">{phone}</a>
+);
+
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   await requireAdmin();
   const { error } = await searchParams;
   const db = createAdminClient();
+  const today = todayInTZ();
   const [pending, approved] = await Promise.all([
-    db.from("bookings").select("*").eq("status", "pending").gte("date", todayInTZ()).order("date").order("start_hour").order("created_at"),
-    db.from("bookings").select("*").eq("status", "approved").gte("date", todayInTZ()).order("date").order("start_hour"),
+    db.from("bookings").select("*").eq("status", "pending").gte("date", today).order("date").order("start_hour").order("created_at"),
+    db.from("bookings").select("*").eq("status", "approved").gte("date", today).order("date").order("start_hour"),
   ]);
 
   return (
-    <main className="mx-auto w-full max-w-2xl space-y-8 p-6">
+    <main className="mx-auto w-full max-w-2xl space-y-8 px-4 py-6">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Admin</h1>
-        <form action={logout}><button className="text-sm underline">Keluar</button></form>
+        <h1 className="text-2xl font-bold">Dashboard Admin</h1>
+        <form action={logout}><button className="btn-ghost">Keluar</button></form>
       </header>
 
-      {error && <p role="alert" className="rounded bg-red-100 p-3 text-red-900">{ERRORS[error] ?? ERRORS.failed}</p>}
-      {(pending.error || approved.error) && <p role="alert" className="text-red-700">Data gagal dimuat.</p>}
+      {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">{ERRORS[error] ?? ERRORS.failed}</p>}
+      {(pending.error || approved.error) && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">Data gagal dimuat. Muat ulang halaman.</p>}
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-medium">Menunggu persetujuan ({pending.data?.length ?? 0})</h2>
-        {pending.data?.map((b) => (
-          <div key={b.id} className="flex items-center justify-between gap-2 rounded border border-zinc-300 p-3">
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">
+          Menunggu persetujuan <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-sm text-amber-900">{pending.data?.length ?? 0}</span>
+        </h2>
+        {pending.data?.length === 0 && <p className="card text-center text-zinc-500">Tidak ada permintaan baru.</p>}
+        {pending.data?.map((b: Booking) => (
+          <div key={b.id} className="card space-y-3">
             <div>
-              <p className="font-medium">{b.date} · {slotLabel(b.start_hour)}</p>
-              <p className="text-sm">{b.name} · {b.phone}</p>
+              <p className="font-semibold">{when(b)}</p>
+              <p className="text-sm text-zinc-700">{b.name} · <Phone phone={b.phone} /></p>
             </div>
             <div className="flex gap-2">
-              <form action={approveBooking}><input type="hidden" name="id" value={b.id} /><button className="rounded bg-green-700 px-3 py-1 text-white">Setujui</button></form>
-              <form action={rejectBooking}><input type="hidden" name="id" value={b.id} /><button className="rounded bg-red-700 px-3 py-1 text-white">Tolak</button></form>
+              <form action={approveBooking} className="flex-1"><input type="hidden" name="id" value={b.id} /><button className="btn-primary w-full">Setujui</button></form>
+              <form action={rejectBooking} className="flex-1"><input type="hidden" name="id" value={b.id} /><button className="btn-danger w-full">Tolak</button></form>
             </div>
           </div>
         ))}
       </section>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-medium">Sudah disetujui</h2>
-        {approved.data?.map((b) => (
-          <p key={b.id} className="rounded bg-zinc-100 p-3 text-sm">
-            {b.date} · {slotLabel(b.start_hour)} · {b.name} · {b.phone}
-          </p>
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">
+          Sudah disetujui <span className="ml-1 rounded-full bg-green-100 px-2 py-0.5 text-sm text-green-900">{approved.data?.length ?? 0}</span>
+        </h2>
+        {approved.data?.length === 0 && <p className="card text-center text-zinc-500">Belum ada booking yang disetujui.</p>}
+        {approved.data?.map((b: Booking) => (
+          <div key={b.id} className="card">
+            <p className="font-semibold">{when(b)}</p>
+            <p className="text-sm text-zinc-700">{b.name} · <Phone phone={b.phone} /></p>
+          </div>
         ))}
       </section>
     </main>

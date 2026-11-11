@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
-import { todayInTZ } from "@/lib/slots";
+import { hourInTZ, todayInTZ } from "@/lib/slots";
 import { validateBooking } from "@/lib/validate";
 
 export type BookingState = { ok?: boolean; error?: string };
@@ -16,7 +16,7 @@ export async function createBooking(_prev: BookingState, form: FormData): Promis
     name: String(form.get("name") ?? "").trim(),
     phone: String(form.get("phone") ?? "").replace(/[\s-]/g, ""),
   };
-  const error = validateBooking(booking, todayInTZ());
+  const error = validateBooking(booking, todayInTZ(), hourInTZ());
   if (error) return { error };
 
   const { error: dbError } = await createAdminClient()

@@ -20,7 +20,7 @@ Stack: Next.js 16 (App Router) + TypeScript + Tailwind 4, Supabase (Postgres + A
 - The public page may expose only `date` + `start_hour` of approved bookings. Never names or phones.
 - **Admin** = one Supabase Auth user whose email equals `ADMIN_EMAIL`. Every admin page and action calls `requireAdmin()` (`src/lib/admin.ts`); `src/proxy.ts` is only a convenience redirect and session refresh.
 - Mutations are Server Actions (`src/app/actions.ts`, `src/app/admin/actions.ts`). No REST API layer.
-- UI text is Indonesian. Styling is Tailwind utility classes only.
+- UI text is Indonesian. Styling is Tailwind only, light theme only (green-700 primary, zinc neutrals). Shared look lives in `@layer components` in `src/app/globals.css` (`.card`, `.input`, `.btn-primary`, `.btn-danger`, `.btn-ghost`); reuse them instead of repeating long class lists. Selection/date state lives in the URL (`?date=&slot=`), not client state. Slots whose hour already started today are disabled in the UI and rejected server-side.
 
 ## Env vars (`.env.local`; on Vercel: Project Settings → Environment Variables)
 See `.env.example`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAIL`.
@@ -36,4 +36,3 @@ See `.env.example`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
 - Residents get no status update after submitting; the admin calls them using the phone number.
 - Anti-spam is a honeypot only (no rate limiting).
 - An approved booking can't be cancelled from the UI (edit the row in Supabase).
-- Slots earlier today are still shown as available.

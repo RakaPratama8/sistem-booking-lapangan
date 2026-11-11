@@ -2,15 +2,23 @@ import { login } from "../actions";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  const input = "w-full rounded border border-zinc-300 p-2";
   return (
-    <main className="mx-auto w-full max-w-sm space-y-4 p-6">
-      <h1 className="text-2xl font-semibold">Login Admin</h1>
-      <form action={login} className="space-y-3">
-        <input name="email" type="email" required placeholder="Email" className={input} />
-        <input name="password" type="password" required placeholder="Password" className={input} />
-        {error && <p role="alert" className="text-sm text-red-700">Email atau password salah.</p>}
-        <button className="rounded bg-zinc-800 px-4 py-2 text-white">Masuk</button>
+    <main className="mx-auto w-full max-w-sm px-4 py-12">
+      <form action={login} className="card space-y-4">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold">Login Admin</h1>
+          <p className="text-sm text-zinc-600">Khusus pengelola lapangan.</p>
+        </div>
+        <label className="block space-y-1 text-sm font-medium">
+          Email
+          <input name="email" type="email" required autoComplete="email" className="input" />
+        </label>
+        <label className="block space-y-1 text-sm font-medium">
+          Password
+          <input name="password" type="password" required autoComplete="current-password" className="input" />
+        </label>
+        {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">Email atau password salah.</p>}
+        <button className="btn-primary w-full">Masuk</button>
       </form>
     </main>
   );
