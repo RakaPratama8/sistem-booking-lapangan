@@ -1,6 +1,8 @@
+import ConfirmForm from "@/components/ConfirmForm";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/server";
 import { formatDate, slotLabel, todayInTZ } from "@/lib/slots";
+import { waLink } from "@/lib/validate";
 import { approveBooking, logout, rejectBooking } from "./actions";
 
 const ERRORS: Record<string, string> = {
@@ -13,8 +15,13 @@ type Booking = { id: string; date: string; start_hour: number; name: string; pho
 const when = (b: Booking) =>
   `${formatDate(b.date, { weekday: "long", day: "numeric", month: "long" })} · ${slotLabel(b.start_hour)}`;
 
-const Phone = ({ phone }: { phone: string }) => (
-  <a href={`tel:${phone}`} className="text-green-800 underline">{phone}</a>
+/** Phone (tap to call) + WhatsApp button with a prefilled message. */
+const Contact = ({ b, text }: { b: Booking; text: string }) => (
+  <p className="muted flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+    <span>{b.name}</span>
+    <a href={`tel:${b.phone}`} className="link">{b.phone}</a>
+    <a href={waLink(b.phone, text)} target="_blank" rel="noopener noreferrer" className="link">WhatsApp</a>
+  </p>
 );
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -34,37 +41,36 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <form action={logout}><button className="btn-ghost">Keluar</button></form>
       </header>
 
-      {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">{ERRORS[error] ?? ERRORS.failed}</p>}
-      {(pending.error || approved.error) && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">Data gagal dimuat. Muat ulang halaman.</p>}
+      {error && <p role="alert" className="alert-error">{ERRORS[error] ?? ERRORS.failed}</p>}
+      {(pending.error || approved.error) && <p role="alert" className="alert-error">Data gagal dimuat. Muat ulang halaman.</p>}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">
-          Menunggu persetujuan <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-sm text-amber-900">{pending.data?.length ?? 0}</span>
-        </h2>
-        {pending.data?.length === 0 && <p className="card text-center text-zinc-500">Tidak ada permintaan baru.</p>}
+        <h2 className="text-lg font-semibold">Menunggu persetujuan <span className="badge-warn">{pending.data?.length ?? 0}</span></h2>
+        {pending.data?.length === 0 && <p className="card muted text-center">Tidak ada permintaan baru.</p>}
         {pending.data?.map((b: Booking) => (
           <div key={b.id} className="card space-y-3">
             <div>
               <p className="font-semibold">{when(b)}</p>
-              <p className="text-sm text-zinc-700">{b.name} · <Phone phone={b.phone} /></p>
+              <Contact b={b} text={`Halo ${b.name}, ini admin lapangan. Soal permintaan booking ${when(b)}: `} />
             </div>
             <div className="flex gap-2">
               <form action={approveBooking} className="flex-1"><input type="hidden" name="id" value={b.id} /><button className="btn-primary w-full">Setujui</button></form>
-              <form action={rejectBooking} className="flex-1"><input type="hidden" name="id" value={b.id} /><button className="btn-danger w-full">Tolak</button></form>
+              <ConfirmForm action={rejectBooking} message={`Tolak permintaan ${b.name} untuk ${when(b)}?`} className="flex-1">
+                <input type="hidden" name="id" value={b.id} />
+                <button className="btn-danger w-full">Tolak</button>
+              </ConfirmForm>
             </div>
           </div>
         ))}
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">
-          Sudah disetujui <span className="ml-1 rounded-full bg-green-100 px-2 py-0.5 text-sm text-green-900">{approved.data?.length ?? 0}</span>
-        </h2>
-        {approved.data?.length === 0 && <p className="card text-center text-zinc-500">Belum ada booking yang disetujui.</p>}
+        <h2 className="text-lg font-semibold">Sudah disetujui <span className="badge-ok">{approved.data?.length ?? 0}</span></h2>
+        {approved.data?.length === 0 && <p className="card muted text-center">Belum ada booking yang disetujui.</p>}
         {approved.data?.map((b: Booking) => (
           <div key={b.id} className="card">
             <p className="font-semibold">{when(b)}</p>
-            <p className="text-sm text-zinc-700">{b.name} · <Phone phone={b.phone} /></p>
+            <Contact b={b} text={`Halo ${b.name}, booking lapangan Anda untuk ${when(b)} sudah disetujui. `} />
           </div>
         ))}
       </section>

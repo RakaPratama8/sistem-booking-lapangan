@@ -28,7 +28,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
     <main className="mx-auto w-full max-w-2xl space-y-8 px-4 py-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold">Jadwal Lapangan</h1>
-        <p className="text-zinc-600">Pilih tanggal dan jam, lalu kirim permintaan. Tanpa akun.</p>
+        <p className="muted">Pilih tanggal dan jam, lalu kirim permintaan. Tanpa akun.</p>
       </div>
 
       <section className="space-y-3">
@@ -40,9 +40,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               href={`/?date=${d}`}
               scroll={false}
               aria-current={d === date ? "date" : undefined}
-              className={`flex shrink-0 flex-col items-center rounded-xl border px-4 py-2 text-sm ${
-                d === date ? "border-green-700 bg-green-700 text-white" : "border-zinc-300 bg-white hover:bg-zinc-100"
-              }`}
+              className={d === date ? "chip-active" : "chip"}
             >
               <span>{i === 0 ? "Hari ini" : i === 1 ? "Besok" : formatDate(d, { weekday: "short" })}</span>
               <span className="text-lg font-semibold">{formatDate(d, { day: "numeric" })}</span>
@@ -51,41 +49,36 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           ))}
         </div>
         <form className="flex items-center gap-2 text-sm">
-          <label htmlFor="date" className="text-zinc-600">Tanggal lain:</label>
+          <label htmlFor="date" className="muted">Tanggal lain:</label>
           <input id="date" type="date" name="date" defaultValue={date} min={today} required className="input w-auto" />
           <button className="btn-ghost">Lihat</button>
         </form>
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-semibold">2. Pilih jam · <span className="font-normal text-zinc-600">{longDate}</span></h2>
-        {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">Jadwal gagal dimuat. Muat ulang halaman.</p>}
+        <h2 className="font-semibold">2. Pilih jam · <span className="muted font-normal">{longDate}</span></h2>
+        {error && <p role="alert" className="alert-error">Jadwal gagal dimuat. Muat ulang halaman.</p>}
         <ul className="grid grid-cols-2 gap-3">
           {SLOT_HOURS.map((hour) => {
             const taken = booked.has(hour);
-            const past = isPast(hour);
-            const base = "block rounded-xl border p-3 text-center";
-            if (taken || past) {
+            if (taken || isPast(hour)) {
               return (
-                <li key={hour} className={`${base} border-zinc-200 bg-zinc-100 text-zinc-400`}>
+                <li key={hour} className="slot-off">
                   <span className="block font-semibold line-through">{slotLabel(hour)}</span>
                   <span className="text-xs">{taken ? "Sudah dibooking" : "Sudah lewat"}</span>
                 </li>
               );
             }
+            const isSelected = hour === selected;
             return (
               <li key={hour}>
                 <Link
                   href={`/?date=${date}&slot=${hour}#form`}
-                  aria-current={hour === selected ? "true" : undefined}
-                  className={`${base} ${
-                    hour === selected
-                      ? "border-green-700 bg-green-700 text-white"
-                      : "border-green-300 bg-white text-green-900 hover:bg-green-50"
-                  }`}
+                  aria-current={isSelected ? "true" : undefined}
+                  className={isSelected ? "slot-selected" : "slot"}
                 >
                   <span className="block font-semibold">{slotLabel(hour)}</span>
-                  <span className="text-xs">{hour === selected ? "✓ Dipilih" : "Tersedia"}</span>
+                  <span className="text-xs">{isSelected ? "✓ Dipilih" : "Tersedia"}</span>
                 </Link>
               </li>
             );
@@ -104,7 +97,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           />
         </section>
       ) : (
-        <p className="text-center text-sm text-zinc-500">Pilih jam yang tersedia untuk melanjutkan.</p>
+        <p className="muted text-center text-sm">Pilih jam yang tersedia untuk melanjutkan.</p>
       )}
     </main>
   );

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { validateBooking } from "./validate";
+import { validateBooking, waLink } from "./validate";
 import { addDays, slotLabel } from "./slots";
 
 const ok = { date: "2030-01-10", hour: 17, name: "Budi", phone: "08123456789" };
@@ -15,5 +15,7 @@ test("rejects impossible date", () => expect(v({ ...ok, date: "2030-02-31" })).n
 test("rejects hour outside opening hours", () => expect(v({ ...ok, hour: 9 })).not.toBeNull());
 test("rejects bad phone", () => expect(v({ ...ok, phone: "12345" })).not.toBeNull());
 test("rejects short name", () => expect(v({ ...ok, name: "B" })).not.toBeNull());
+test("waLink converts 08 to 62", () => expect(waLink("08123456789", "Hai")).toBe("https://wa.me/628123456789?text=Hai"));
+test("waLink keeps +62 numbers", () => expect(waLink("+628123456789", "a b")).toBe("https://wa.me/628123456789?text=a%20b"));
 test("slot label", () => expect(slotLabel(16)).toBe("16:00–17:00"));
 test("addDays crosses month end", () => expect(addDays("2030-01-31", 1)).toBe("2030-02-01"));

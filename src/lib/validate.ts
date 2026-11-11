@@ -2,6 +2,13 @@ import { isValidDate, isValidSlot } from "./slots";
 
 const PHONE = /^(\+62|0)\d{8,13}$/;
 
+/** wa.me link for a stored phone (08… or +62…), with a prefilled message. */
+export function waLink(phone: string, text: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const intl = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
+  return `https://wa.me/${intl}?text=${encodeURIComponent(text)}`;
+}
+
 /** Returns an error message (Indonesian, shown to the resident) or null if OK. */
 export function validateBooking(
   b: { date: string; hour: number; name: string; phone: string },
