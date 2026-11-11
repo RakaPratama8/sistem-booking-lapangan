@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Booking Lapangan
 
-## Getting Started
+A simple booking system for a neighborhood sport field. Residents check which slots are free and send a booking request, with no account needed. One admin approves or rejects each request.
 
-First, run the development server:
+## How it works
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. A resident opens the page and picks a date.
+2. They pick a free time slot (e.g. 16:00–17:00) and enter their name and phone number.
+3. The admin logs in at `/admin`, sees the request, and approves or rejects it.
+4. Approved slots show as booked for everyone.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Not included: online payment, resident accounts, multiple fields, recurring bookings, notifications. The UI is in Indonesian.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Supabase (Postgres + Auth) · Vercel
 
-## Learn More
+## Setup
 
-To learn more about Next.js, take a look at the following resources:
+You need Node.js 20+ and a free [Supabase](https://supabase.com) account.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Create a Supabase project.** In **SQL Editor**, run the contents of `supabase/schema.sql`.
+2. **Create the admin.** In **Authentication → Users → Add user**, enter an email and password and tick *Auto Confirm User*. Then in **Authentication → Sign In / Providers → Email**, turn off *Allow new users to sign up*.
+3. **Set environment variables.** Run `cp .env.example .env.local` and fill it in (see below). Find the keys in **Project Settings → API**.
+4. **Run it.**
+   ```bash
+   npm install
+   npm run dev
+   ```
+   Residents: <http://localhost:3000> · Admin: <http://localhost:3000/admin>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Environment variables
 
-## Deploy on Vercel
+| Variable | What it is |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon / publishable key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service-role / secret key. **Server only.** Never commit it or expose it to the browser. |
+| `ADMIN_EMAIL` | Email of the admin user from step 2, **in lowercase** |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build |
+| `npm run lint` | Lint the code |
+| `npm test` | Run the unit tests |
+
+## Customize
+
+| To change | Edit |
+| --- | --- |
+| Opening hours / slot length | `SLOT_HOURS` in `src/lib/slots.ts` |
+| Site name and tagline | `src/lib/config.ts` |
+| Brand color | the `--color-brand-*` block in `src/app/globals.css` |
+| Logo and browser icon | `public/logo.svg` and `src/app/icon.svg` (change both) |
+
+## Deploy
+
+1. Push the code to a GitHub repository.
+2. Import the repository in [Vercel](https://vercel.com/new).
+3. Add the four environment variables above, then deploy.
+
+## Known limits
+
+- Residents get no confirmation after submitting. The admin contacts them by phone or WhatsApp (buttons are on each booking).
+- Spam protection is a hidden form field only, with no rate limiting.
+- An approved booking can't be cancelled from the UI. Edit the row in Supabase instead.
+
+See [`CLAUDE.md`](CLAUDE.md) for architecture rules and project conventions.
