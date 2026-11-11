@@ -18,7 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <header className="bar">
           <div className="mx-auto flex max-w-2xl items-center px-4 py-3">
-            <Link href="/" className="flex items-center gap-2 font-semibold text-brand-800 dark:text-brand-300">
+            <Link href="/" className="flex items-center gap-2 py-2 font-semibold text-brand-800 dark:text-brand-300">
               <Image src="/logo.svg" alt="" width={28} height={28} />
               {SITE_NAME}
             </Link>

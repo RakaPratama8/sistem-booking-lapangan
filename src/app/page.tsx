@@ -33,7 +33,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
 
       <section className="space-y-3">
         <h2 className="font-semibold">1. Pilih tanggal</h2>
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
           {Array.from({ length: QUICK_DAYS }, (_, i) => addDays(today, i)).map((d, i) => (
             <Link
               key={d}
@@ -48,9 +48,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             </Link>
           ))}
         </div>
-        <form className="flex items-center gap-2 text-sm">
-          <label htmlFor="date" className="muted">Tanggal lain:</label>
-          <input id="date" type="date" name="date" defaultValue={date} min={today} required className="input w-auto" />
+        <form className="flex flex-wrap items-center gap-2 text-sm">
+          <label htmlFor="date" className="muted w-full">Atau pilih tanggal lain:</label>
+          <input id="date" type="date" name="date" defaultValue={date} min={today} required className="input min-w-0 flex-1" />
           <button className="btn-ghost">Lihat</button>
         </form>
       </section>

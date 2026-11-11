@@ -1,3 +1,4 @@
+import SubmitButton from "@/components/SubmitButton";
 import { login } from "../actions";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -18,7 +19,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <input name="password" type="password" required autoComplete="current-password" className="input" />
         </label>
         {error && <p role="alert" className="alert-error text-sm">Email atau password salah.</p>}
-        <button className="btn-primary w-full">Masuk</button>
+        <SubmitButton className="btn-primary w-full">Masuk</SubmitButton>
       </form>
     </main>
   );
