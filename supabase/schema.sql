@@ -5,7 +5,7 @@ create table bookings (
   start_hour smallint not null,
   name text not null,
   phone text not null,
-  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'cancelled')),
   created_at timestamptz not null default now()
 );
 

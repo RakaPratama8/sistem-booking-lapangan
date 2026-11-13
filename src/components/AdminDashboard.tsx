@@ -1,6 +1,8 @@
-import { approveBooking, logout, rejectBooking } from "@/app/admin/actions";
+import Link from "next/link";
+import { approveBooking, cancelBooking, logout, rejectBooking } from "@/app/admin/actions";
 import { formatDate, slotLabel } from "@/lib/slots";
 import { waLink } from "@/lib/validate";
+import AutoRefresh from "./AutoRefresh";
 import ConfirmForm from "./ConfirmForm";
 import SubmitButton from "./SubmitButton";
 
@@ -46,9 +48,13 @@ export default function AdminDashboard({
 }) {
   return (
     <main className="mx-auto w-full max-w-2xl space-y-8 px-4 py-6">
-      <header className="flex items-center justify-between gap-2">
+      <AutoRefresh />
+      <header className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Dashboard Admin</h1>
-        <form action={logout}><SubmitButton className="btn-ghost">Keluar</SubmitButton></form>
+        <div className="flex gap-2">
+          <Link href="/admin/history" className="btn-ghost">Riwayat</Link>
+          <form action={logout}><SubmitButton className="btn-ghost">Keluar</SubmitButton></form>
+        </div>
       </header>
 
       {error && <p role="alert" className="alert-error">{ERRORS[error] ?? ERRORS.failed}</p>}
@@ -82,6 +88,10 @@ export default function AdminDashboard({
           <div key={b.id} className="card space-y-3">
             <When b={b} />
             <Contact b={b} text={`Halo ${b.name}, booking lapangan Anda untuk ${when(b)} sudah disetujui. `} />
+            <ConfirmForm action={cancelBooking} message={`Batalkan booking ${b.name} untuk ${when(b)}?`}>
+              <input type="hidden" name="id" value={b.id} />
+              <SubmitButton className="btn-danger w-full">Batalkan</SubmitButton>
+            </ConfirmForm>
           </div>
         ))}
       </section>

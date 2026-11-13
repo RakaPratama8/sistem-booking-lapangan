@@ -50,8 +50,16 @@
     @apply rounded-lg bg-red-50 p-3 text-red-800 dark:bg-red-950 dark:text-red-200;
   }
   .badge-warn,
-  .badge-ok {
+  .badge-ok,
+  .badge-bad,
+  .badge-off {
     @apply ml-1 rounded-full px-2 py-0.5 text-sm;
+  }
+  .badge-bad {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200;
+  }
+  .badge-off {
+    @apply bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300;
   }
   .badge-warn {
     @apply bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200;

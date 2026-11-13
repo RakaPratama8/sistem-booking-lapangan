@@ -23,12 +23,12 @@ export async function logout() {
   redirect("/admin/login");
 }
 
-async function setStatus(form: FormData, status: "approved" | "rejected") {
+// `from` limits the update to rows currently in that status (a stale page can't re-cancel or resurrect a row).
+async function setStatus(form: FormData, status: "approved" | "rejected" | "cancelled", from?: "approved") {
   await requireAdmin();
-  const { error } = await createAdminClient()
-    .from("bookings")
-    .update({ status })
-    .eq("id", String(form.get("id")));
+  let query = createAdminClient().from("bookings").update({ status }).eq("id", String(form.get("id")));
+  if (from) query = query.eq("status", from);
+  const { error } = await query;
   // 23505 = unique violation: another booking is already approved for this slot.
   if (error) redirect(`/admin?error=${error.code === "23505" ? "taken" : "failed"}`);
   redirect("/admin");
@@ -36,3 +36,4 @@ async function setStatus(form: FormData, status: "approved" | "rejected") {
 
 export const approveBooking = async (form: FormData) => setStatus(form, "approved");
 export const rejectBooking = async (form: FormData) => setStatus(form, "rejected");
+export const cancelBooking = async (form: FormData) => setStatus(form, "cancelled", "approved");

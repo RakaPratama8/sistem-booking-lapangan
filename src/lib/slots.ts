@@ -13,7 +13,14 @@ export const hourInTZ = () =>
 export const isValidDate = (s: string) =>
   /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s)) && new Date(s).toISOString().startsWith(s);
 
-export const isValidSlot = (hour: number) => SLOT_HOURS.includes(hour);
+/** How many rows fall on each start hour. A failed query (null/undefined) counts as none. */
+export const countByHour = (rows: { start_hour: number }[] | null | undefined) => {
+  const counts = new Map<number, number>();
+  for (const r of rows ?? []) counts.set(r.start_hour, (counts.get(r.start_hour) ?? 0) + 1);
+  return counts;
+};
+
+export const isValidSlot =(hour: number) => SLOT_HOURS.includes(hour);
 
 export const addDays = (date: string, n: number) => {
   const d = new Date(`${date}T00:00:00Z`);

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import BookingForm from "@/components/BookingForm";
 import { createAdminClient } from "@/lib/supabase/server";
-import { SLOT_HOURS, addDays, formatDate, hourInTZ, isValidDate, isValidSlot, slotLabel, todayInTZ } from "@/lib/slots";
+import { SLOT_HOURS, addDays, countByHour, formatDate, hourInTZ, isValidDate, isValidSlot, slotLabel, todayInTZ } from "@/lib/slots";
 
 const QUICK_DAYS = 7;
 
@@ -12,13 +12,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   const date = sp.date && isValidDate(sp.date) && sp.date >= today ? sp.date : today;
   const selected = Number(sp.slot);
 
-  // Only date + hour of approved bookings leave the server; names/phones stay private.
-  const { data, error } = await createAdminClient()
-    .from("bookings")
-    .select("start_hour")
-    .eq("date", date)
-    .eq("status", "approved");
+  // Only date + hour of approved bookings, plus a pending count per hour, leave the server; names/phones stay private.
+  const db = createAdminClient();
+  const [{ data, error }, { data: pendingRows }] = await Promise.all([
+    db.from("bookings").select("start_hour").eq("date", date).eq("status", "approved"),
+    db.from("bookings").select("start_hour").eq("date", date).eq("status", "pending"),
+  ]);
   const booked = new Set(data?.map((r) => r.start_hour));
+  // A failed pending query just means no counts; only the approved query drives the error banner.
+  const pending = countByHour(pendingRows);
   const isPast = (hour: number) => date === today && hour <= nowHour;
 
   const longDate = formatDate(date, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -78,7 +80,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                   className={isSelected ? "slot-selected" : "slot"}
                 >
                   <span className="block font-semibold">{slotLabel(hour)}</span>
-                  <span className="text-xs">{isSelected ? "✓ Dipilih" : "Tersedia"}</span>
+                  <span className="text-xs">{isSelected ? "✓ Dipilih" : pending.get(hour) ? `Tersedia · ${pending.get(hour)} peminta` : "Tersedia"}</span>
                 </Link>
               </li>
             );
