@@ -28,10 +28,10 @@ export default async function HistoryPage({ searchParams }: { searchParams: Prom
   const { data, error } = await rowsQuery;
 
   return (
-    <main className="mx-auto w-full max-w-2xl space-y-4 px-4 py-6">
+    <main className="mx-auto w-full max-w-lg space-y-4 px-4 py-6">
       <header className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Riwayat Booking</h1>
-        <Link href="/admin" className="btn-ghost">← Dashboard</Link>
+        <h1 className="title">Riwayat Booking</h1>
+        <Link href="/admin" className="btn-ghost -mx-4">Kembali ke dashboard</Link>
       </header>
       {(error || countError) && <p role="alert" className="alert-error">Data gagal dimuat. Muat ulang halaman.</p>}
       <BookingHistory rows={(data ?? []) as HistoryRow[]} status={status} page={page} lastPage={last} />

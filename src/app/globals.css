@@ -1,113 +1,146 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-archivo);
 
-  /* Brand color. To rebrand, point these at another palette (e.g. var(--color-blue-700))
-     and update the fill in public/logo.svg + src/app/icon.svg. */
-  --color-brand-50: var(--color-green-50);
-  --color-brand-100: var(--color-green-100);
-  --color-brand-200: var(--color-green-200);
-  --color-brand-300: var(--color-green-300);
-  --color-brand-600: var(--color-green-600);
-  --color-brand-700: var(--color-green-700);
-  --color-brand-800: var(--color-green-800);
-  --color-brand-900: var(--color-green-900);
+  /* Semantic colors. Values live in :root below and flip for dark mode there, so components
+     use these names (bg-ground, text-ink, text-muted, border-line, text-alert, bg-accent, ...)
+     and rarely need dark: variants. */
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-alert: var(--alert);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+
+  /* Brand color = teal. To rebrand, point these at another palette (e.g. var(--color-blue-700)),
+     change --accent below, and update the fill in public/logo.svg + src/app/icon.svg. */
+  --color-brand-50: var(--color-teal-50);
+  --color-brand-100: var(--color-teal-100);
+  --color-brand-200: var(--color-teal-200);
+  --color-brand-300: var(--color-teal-300);
+  --color-brand-600: var(--color-teal-600);
+  --color-brand-700: var(--color-teal-700);
+  --color-brand-800: var(--color-teal-800);
+  --color-brand-900: var(--color-teal-900);
 }
 
 /* Light/dark follows the device setting. */
 :root {
   color-scheme: light dark;
+  --ground: #f6f7f7;
+  --surface: #ffffff;
+  --ink: #1e2227;
+  --muted: #5f6872;
+  --line: #dcdfe2;
+  --alert: #b42318;
+  --accent: #0f766e;
+  --on-accent: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #15181b;
+    --surface: #1d2125;
+    --ink: #e8eaec;
+    --muted: #9aa3ad;
+    --line: #2d3338;
+    --alert: #f97066;
+    --accent: #2dd4bf;
+    --on-accent: #0b1f1d;
+  }
 }
 
 @layer base {
   body {
-    @apply bg-zinc-50 font-sans text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+    @apply bg-ground font-sans text-ink;
   }
 }
 
 /* Shared look. Tailwind v4 can't @apply a custom class, so variants repeat their base via grouped selectors. */
 @layer components {
-  .bar {
-    @apply border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900;
+  /* Type: page headings and slot times are semi-condensed, bold, tabular. */
+  .title {
+    @apply text-[1.75rem] leading-tight font-bold font-stretch-semi-condensed;
   }
-  .card {
-    @apply rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900;
-  }
-  .card-success {
-    @apply rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-900 shadow-sm dark:border-brand-800 dark:bg-brand-900/30 dark:text-brand-100;
+  .time {
+    @apply text-[1.375rem] leading-[1.1] font-bold font-stretch-semi-condensed tabular-nums;
   }
   .muted {
-    @apply text-zinc-600 dark:text-zinc-400;
+    @apply text-muted;
   }
   .link {
-    @apply text-brand-800 underline dark:text-brand-300;
-  }
-  .input {
-    @apply w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30 dark:border-zinc-700 dark:bg-zinc-800;
-  }
-  .alert-error {
-    @apply rounded-lg bg-red-50 p-3 text-red-800 dark:bg-red-950 dark:text-red-200;
-  }
-  .badge-warn,
-  .badge-ok,
-  .badge-bad,
-  .badge-off {
-    @apply ml-1 rounded-full px-2 py-0.5 text-sm;
-  }
-  .badge-bad {
-    @apply bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200;
-  }
-  .badge-off {
-    @apply bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300;
-  }
-  .badge-warn {
-    @apply bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200;
-  }
-  .badge-ok {
-    @apply bg-brand-100 text-brand-900 dark:bg-brand-900/40 dark:text-brand-100;
+    @apply cursor-pointer text-accent underline underline-offset-2;
   }
 
+  /* One row pattern for slots, admin lists and history. */
+  .row {
+    @apply flex min-h-12 items-center justify-between gap-3 border-b border-line py-3;
+  }
+
+  /* Text tabs: the day strip and the history filters. */
+  .tab,
+  .tab-active {
+    @apply inline-flex min-h-11 shrink-0 flex-col items-center justify-center border-b-2 px-3 py-1 text-sm;
+  }
+  .tab {
+    @apply border-transparent text-muted hover:text-ink;
+  }
+  .tab-active {
+    @apply border-accent font-semibold text-ink;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-base text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/30;
+  }
+  .alert-error {
+    @apply rounded-lg bg-alert/10 p-3 text-alert;
+  }
+
+  /* Buttons: only the primary one is solid; the others are plain text. */
   .btn-primary,
   .btn-danger,
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50;
+    @apply inline-flex min-h-10 items-center justify-center rounded-lg px-4 font-medium focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ground disabled:opacity-50;
   }
   .btn-primary {
-    @apply bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-700;
+    @apply min-h-11 bg-accent text-on-accent hover:opacity-90;
   }
   .btn-danger {
-    @apply border border-red-300 bg-white text-red-700 hover:bg-red-50 focus-visible:ring-red-600 dark:border-red-800 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-950;
+    @apply text-alert hover:underline;
   }
   .btn-ghost {
-    @apply border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 focus-visible:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800;
+    @apply text-ink hover:underline;
   }
 
-  /* Date chips on the home page. */
-  .chip,
-  .chip-active {
-    @apply flex shrink-0 flex-col items-center rounded-xl border px-4 py-2 text-sm;
+  /* Booking dialog: bottom sheet on phones, centered from 640px. */
+  .sheet {
+    @apply m-0 mt-auto max-h-[90dvh] w-full max-w-none overflow-y-auto rounded-t-2xl border-0 bg-surface p-0 text-ink;
   }
-  .chip {
-    @apply border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800;
+  .sheet::backdrop {
+    background: rgb(0 0 0 / 0.45);
+    backdrop-filter: blur(5px);
   }
-  .chip-active {
-    @apply border-brand-700 bg-brand-700 text-white;
+  @media (min-width: 640px) {
+    .sheet {
+      @apply m-auto max-w-md rounded-2xl;
+    }
   }
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet[open] {
+      animation: sheet-up 180ms ease-out;
+    }
+  }
+}
 
-  /* Time slots on the home page. */
-  .slot,
-  .slot-selected,
-  .slot-off {
-    @apply block rounded-xl border p-3 text-center;
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
   }
-  .slot {
-    @apply border-brand-300 bg-white text-brand-900 hover:bg-brand-50 dark:border-brand-800 dark:bg-zinc-900 dark:text-brand-100 dark:hover:bg-zinc-800;
-  }
-  .slot-selected {
-    @apply border-brand-700 bg-brand-700 text-white;
-  }
-  .slot-off {
-    @apply border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-600;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

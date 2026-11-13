@@ -5,10 +5,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { error } = await searchParams;
   return (
     <main className="mx-auto w-full max-w-sm px-4 py-12">
-      <form action={login} className="card space-y-4">
+      <form action={login} className="space-y-4">
         <div className="space-y-1">
-          <h1 className="text-xl font-bold">Login Admin</h1>
-          <p className="muted text-sm">Khusus pengelola lapangan.</p>
+          <h1 className="title">Login Admin</h1>
+          <p className="muted">Khusus pengelola lapangan.</p>
         </div>
         <label className="block space-y-1 text-sm font-medium">
           Email
