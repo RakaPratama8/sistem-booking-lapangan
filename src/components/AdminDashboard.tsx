@@ -16,6 +16,15 @@ const ERRORS: Record<string, string> = {
 const dateText = (b: Booking) => formatDate(b.date, { weekday: "long", day: "numeric", month: "long" });
 const when = (b: Booking) => `${dateText(b)} jam ${slotLabel(b.start_hour)}`;
 
+/** Pending rows arrive ordered by date, hour, then request time, so same-slot requests are adjacent, oldest first. */
+const groupBySlot = (rows: Booking[]) =>
+  rows.reduce<Booking[][]>((groups, b) => {
+    const last = groups.at(-1);
+    if (last && last[0].date === b.date && last[0].start_hour === b.start_hour) last.push(b);
+    else groups.push([b]);
+    return groups;
+  }, []);
+
 /** Date on top (muted), time range below; the time never splits across lines. */
 const When = ({ b }: { b: Booking }) => (
   <div>
@@ -68,27 +77,35 @@ export default function AdminDashboard({
       <section className="space-y-2">
         <h2 className="font-semibold">Menunggu persetujuan <span className="muted font-normal">{pending.length}</span></h2>
         {pending.length === 0 && <p className="muted border-t border-line py-4">Tidak ada permintaan baru.</p>}
-        <ul className="border-t border-line">
-          {pending.map((b) => (
-            <li key={b.id} className="space-y-3 border-b border-line py-4">
-              <When b={b} />
-              <Who b={b} />
-              <div className="flex items-center gap-2">
-                <form action={approveBooking} className="flex-1">
-                  <input type="hidden" name="id" value={b.id} />
-                  <SubmitButton className="btn-primary w-full">Setujui</SubmitButton>
-                </form>
-                <ConfirmForm action={rejectBooking} message={`Tolak permintaan ${b.name} untuk ${when(b)}?`}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <SubmitButton className="btn-danger">Tolak</SubmitButton>
-                </ConfirmForm>
-              </div>
-              <div className="-mx-4 flex">
-                <Contact b={b} text={`Halo ${b.name}, ini admin lapangan. Soal permintaan booking ${when(b)}: `} />
-              </div>
-            </li>
-          ))}
-        </ul>
+        {groupBySlot(pending).map((group) => (
+          <div key={`${group[0].date}-${group[0].start_hour}`} className="space-y-3 border-t border-line pt-4">
+            <When b={group[0]} />
+            {group.length > 1 && (
+              <p className="muted text-sm">{group.length} permintaan, urut dari yang pertama. Menyetujui satu menolak yang lain.</p>
+            )}
+            <ul>
+              {group.map((b, i) => (
+                <li key={b.id} className="space-y-3 border-t border-line py-4 first:border-t-0 first:pt-0">
+                  {group.length > 1 && <p className="muted text-sm">Antrean {i + 1}</p>}
+                  <Who b={b} />
+                  <div className="flex items-center gap-2">
+                    <form action={approveBooking} className="flex-1">
+                      <input type="hidden" name="id" value={b.id} />
+                      <SubmitButton className="btn-primary w-full">Setujui</SubmitButton>
+                    </form>
+                    <ConfirmForm action={rejectBooking} message={`Tolak permintaan ${b.name} untuk ${when(b)}?`}>
+                      <input type="hidden" name="id" value={b.id} />
+                      <SubmitButton className="btn-danger">Tolak</SubmitButton>
+                    </ConfirmForm>
+                  </div>
+                  <div className="-mx-4 flex">
+                    <Contact b={b} text={`Halo ${b.name}, ini admin lapangan. Soal permintaan booking ${when(b)}: `} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </section>
 
       <section className="space-y-2">
