@@ -11,6 +11,7 @@ Stack: Next.js 16 (App Router) + TypeScript + Tailwind 4, Supabase (Postgres + A
 ## Commands
 - `npm run dev` / `npm run build` / `npm run lint`
 - `npm test` (vitest, unit tests live next to the code as `*.test.ts`)
+- `npm run verify` (lint + test + build). Run after every change.
 
 ## Architecture rules
 - **Slots live in code**: `src/lib/slots.ts` (`SLOT_HOURS`, `TZ`). No slots table. Dates are `YYYY-MM-DD` strings in `Asia/Jakarta`.
@@ -21,6 +22,11 @@ Stack: Next.js 16 (App Router) + TypeScript + Tailwind 4, Supabase (Postgres + A
 - **Admin** = one Supabase Auth user whose email equals `ADMIN_EMAIL`. Every admin page and action calls `requireAdmin()` (`src/lib/admin.ts`); `src/proxy.ts` is only a convenience redirect and session refresh.
 - Mutations are Server Actions (`src/app/actions.ts`, `src/app/admin/actions.ts`). No REST API layer.
 - UI text is Indonesian. Styling is Tailwind only; the look is a calm timetable: plain rows and hairlines, no cards or pills. Colors are semantic tokens (`ground`, `surface`, `ink`, `muted`, `line`, `alert`, `accent`, `on-accent`, used as `bg-ground`, `text-muted`, `border-line`, …) defined as CSS variables in `src/app/globals.css` that flip for the device's dark mode in one place, so components rarely need `dark:`. Shared look lives in `@layer components` there (`.title`, `.time`, `.row`, `.tab*`, `.btn-primary|ghost|danger`, `.input`, `.sheet`, `.alert-error`, `.muted`, `.link`); reuse them instead of repeating long class lists. Tailwind v4 can't `@apply` a custom class, so variants repeat their base via grouped selectors. Only `.btn-primary` is a solid button; other actions are plain text, destructive ones in `alert` color. Type is one family, Archivo (variable, via `next/font`); times and page titles use semi-condensed width. **Branding:** name/tagline in `src/lib/config.ts`; the accent is teal: the `--accent` variable and the `--color-brand-*` block in `globals.css` (use `accent`/`brand-*` classes, never `green-*` or `teal-*` directly); logo = `public/logo.svg` + `src/app/icon.svg` (hard-coded fill `#0F766E`, edit both). **Mobile first** (admin mostly uses a phone): keep layouts working at 320px, tap targets ≥ 40px, inputs ≥ 16px text (stops iOS zoom). Admin UI is `src/components/AdminDashboard.tsx`; `/admin/history` (`src/components/BookingHistory.tsx`, read-only, every booking of every status, `?status=&page=`) is linked from it; form buttons that call server actions use `SubmitButton` (shows "Memproses…", blocks double taps). Destructive admin actions use `src/components/ConfirmForm.tsx`; admin contacts residents via `tel:` and `waLink()` (`src/lib/validate.ts`). Selection/date state lives in the URL (`?date=&slot=`), not client state: the booking form is in `src/components/BookingDialog.tsx`, a native `<dialog>` that is open exactly while `?slot=` is valid (every way of closing it returns to `/?date=`). Slots whose hour already started today are disabled in the UI and rejected server-side.
+
+## Working rules
+- A task is done only when `npm run verify` passes. Report the result, not just "done".
+- If the same mistake happens twice, add a lint rule, test, or `server-only` boundary instead of a new note in this file.
+- Append one line per non-obvious decision to `decisions.tsv` (time, decision, reason, evidence, result).
 
 ## Env vars (`.env.local`; on Vercel: Project Settings → Environment Variables)
 See `.env.example`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAIL`.

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import BookingDialog from "@/components/BookingDialog";
 import BookingForm from "@/components/BookingForm";
-import { createAdminClient } from "@/lib/supabase/server";
-import { SLOT_HOURS, addDays, countByHour, formatDate, hourInTZ, isValidDate, isValidSlot, slotLabel, todayInTZ } from "@/lib/slots";
+import { getPublicSlots } from "@/lib/public-slots";
+import { SLOT_HOURS, addDays, formatDate, hourInTZ, isValidDate, isValidSlot, slotLabel, todayInTZ } from "@/lib/slots";
 
 const QUICK_DAYS = 7;
 
@@ -13,15 +13,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   const date = sp.date && isValidDate(sp.date) && sp.date >= today ? sp.date : today;
   const selected = Number(sp.slot);
 
-  // Only date + hour of approved bookings, plus a pending count per hour, leave the server; names/phones stay private.
-  const db = createAdminClient();
-  const [{ data, error }, { data: pendingRows }] = await Promise.all([
-    db.from("bookings").select("start_hour").eq("date", date).eq("status", "approved"),
-    db.from("bookings").select("start_hour").eq("date", date).eq("status", "pending"),
-  ]);
-  const booked = new Set(data?.map((r) => r.start_hour));
-  // A failed pending query just means no counts; only the approved query drives the error banner.
-  const pending = countByHour(pendingRows);
+  const { booked, pending, error } = await getPublicSlots(date);
   const isPast = (hour: number) => date === today && hour <= nowHour;
 
   const longDate = formatDate(date, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
