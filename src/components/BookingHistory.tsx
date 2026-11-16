@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { STATUSES, STATUS_LABEL, formatRequested, type Status } from "@/lib/history";
 import { formatDate, slotLabel } from "@/lib/slots";
+import { waLink } from "@/lib/validate";
 
 export type HistoryRow = {
   id: string;
@@ -28,7 +29,7 @@ const href = (status: Status | null, page = 1) => {
   return s ? `/admin/history?${s}` : "/admin/history";
 };
 
-/** Read-only log of every booking. Approve/reject/cancel/contact stay on the dashboard. */
+/** Log of every booking. Approve/reject/cancel stay on the dashboard; rejected rows get a WhatsApp link because they leave the dashboard queue. */
 export default function BookingHistory({
   rows,
   status,
@@ -77,6 +78,18 @@ export default function BookingHistory({
               <p className="muted break-words text-sm">{b.phone}</p>
             </div>
             <p className="muted text-xs">Diminta {formatRequested(b.created_at)}</p>
+            {b.status === "rejected" && (
+              <div className="-mx-4">
+                <a
+                  href={waLink(b.phone, `Halo ${b.name}, ini admin lapangan. Permintaan booking ${formatDate(b.date, { weekday: "long", day: "numeric", month: "long" })} jam ${slotLabel(b.start_hour)} tidak dapat disetujui. `)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-ghost"
+                >
+                  WhatsApp
+                </a>
+              </div>
+            )}
           </li>
         ))}
       </ul>
